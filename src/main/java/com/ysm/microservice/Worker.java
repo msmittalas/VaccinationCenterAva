@@ -11,9 +11,14 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
 public class Worker {
@@ -40,6 +45,8 @@ public class Worker {
 	@Value("${emailNotification}")
 	private String emailNotification;
 	
+	@Value("${cowin.url}")
+	private String apiUrl;
 	
 	
 	
@@ -50,10 +57,14 @@ public class Worker {
 		    Slots allSlots=new Slots();
 		    allSlots.setCenters(new ArrayList<Center>());
 		    if(!pincode.equals("-1")) {
-		    	allSlots.getCenters().addAll(getSlotsforPinCode(toDay).getCenters());	
+		    	Slots temp=getSlotsforPinCode(toDay);
+		    	if(temp!=null && temp.getCenters()!=null)
+		    		allSlots.getCenters().addAll(temp.getCenters());	
 		    }
 			if(!districtId.equals("-1")) {
-				allSlots.getCenters().addAll(getSlotsForDistrictId(toDay).getCenters());	
+				Slots temp=getSlotsForDistrictId(toDay);
+				if(temp!=null && temp.getCenters()!=null)
+					allSlots.getCenters().addAll(temp.getCenters());	
 		    }
 
 		
@@ -131,15 +142,35 @@ public class Worker {
 
 
 	private Slots getSlotsForDistrictId(String toDay) {
-		return template.getForEntity(URI.
-				create("https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id="+districtId+"&date="+toDay),
-				Slots.class).getBody();
+		HttpHeaders headers= new HttpHeaders();
+		headers.set("user-agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.51");
+		final HttpEntity<String> entity = new HttpEntity<String>(headers);
+		return  template.exchange(getURL("calendarByDistrict","district_id",districtId,"date",toDay), HttpMethod.GET, entity, Slots.class)        
+    	.getBody();
 	}
+
 
 
 	private Slots getSlotsforPinCode(String toDay) {
-		return template.getForEntity(URI.
-			create("https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin?pincode="+pincode+"&date="+toDay),
-			Slots.class).getBody();
+		
+		HttpHeaders headers= new HttpHeaders();
+		headers.set("user-agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.51");
+		final HttpEntity<String> entity = new HttpEntity<String>(headers);
+        return template.exchange(getURL("calendarByPin", "pincode",pincode,"date",toDay),HttpMethod.GET, entity, Slots.class)
+			.getBody();
 	}
+	
+
+
+	private URI getURL(String searchBy,String...params) {
+		Map<String,String> urlParams=new HashMap<>();
+		urlParams.put("searchBy", searchBy);
+		
+		UriComponentsBuilder builder= UriComponentsBuilder.fromUriString(apiUrl)
+		        .queryParam(params[0], params[1])
+		        .queryParam(params[2], params[3]);
+		return builder.buildAndExpand(urlParams).toUri();
+	}
+	
+	
 }
