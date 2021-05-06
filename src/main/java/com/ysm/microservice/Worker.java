@@ -52,7 +52,7 @@ public class Worker {
 	
 	   @Scheduled(initialDelay = 3000, fixedDelayString = "${fixedDelay}")
 	   public void checkForAvailablity() {
-	       
+	       try{
 		    String toDay=getCurrentDate(LocalDateTime.now().toLocalDate());
 		    Slots allSlots=new Slots();
 		    allSlots.setCenters(new ArrayList<Center>());
@@ -82,7 +82,15 @@ public class Worker {
 		{
 			System.out.println("Not Available Yet Trying one more time....");
 		}
-				
+	       }catch (Exception exception) {
+	    	   
+	    	   //TODO remove it 
+	    	  exception.printStackTrace();
+	    	   
+		}
+	       finally {
+	    	   System.out.println("Task Completed...");
+	       }
 	   
 	}
 
