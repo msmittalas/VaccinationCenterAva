@@ -72,7 +72,7 @@ public class Worker {
 		Map<Integer,Center> centers= new HashMap<>();
 		
 		findSlots(allSlots, availableCenters, centers);
-		if(availableCenters.size()>0)
+		if(!availableCenters.isEmpty())
 		{	
 			String msg=displayResults(availableCenters, centers);
 			
@@ -128,7 +128,7 @@ public class Worker {
 			List<Session> centerSlots= b.getSessions();
 			List<Session> availableSession=centerSlots.stream().filter(s->s.getAvailableCapacity()>0).collect(Collectors.toList());
 			
-			if(availableSession.size()>0)
+			if(!availableSession.isEmpty())
 			{
 				List<Session> s=availableCenters.get(b.getCenterId());
 				if(s==null)
