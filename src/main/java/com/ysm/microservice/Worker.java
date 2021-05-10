@@ -72,7 +72,7 @@ public class Worker {
 		Map<Integer,Center> centers= new HashMap<>();
 		
 		findSlots(allSlots, availableCenters, centers);
-		if(availableCenters.size()>1)
+		if(availableCenters.size()>0)
 		{	
 			String msg=displayResults(availableCenters, centers);
 			
@@ -89,7 +89,7 @@ public class Worker {
 	    	   
 		}
 	       finally {
-	    	   System.out.println("Task Completed...");
+	    	   System.out.println("Task Completed..."+LocalDateTime.now());
 	       }
 	   
 	}
